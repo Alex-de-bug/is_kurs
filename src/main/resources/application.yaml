@@ -1,12 +1,10 @@
 spring:
   application:
     name: calendar
-  config:
-    import: classpath:db.properties
   datasource:
-    url: ${db.url}
-    username: ${db.username}
-    password: ${db.password}
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -19,12 +17,12 @@ spring:
     open-in-view: true
 
 jwt:
-  expiration: 360000
-  secret: ${secret}
+  expiration: ${JWT_EXPIRATION}
+  secret: ${JWT_SECRET}
 
 server:
   port: 80
 
 service:
   calendar:
-    url: https://isdayoff.ru/api/getdata?year=%d&pre=1
+    url: ${SERVICE_CALENDAR_URL}
