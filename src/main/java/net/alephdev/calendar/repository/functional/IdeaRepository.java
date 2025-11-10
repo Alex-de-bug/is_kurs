@@ -11,9 +11,9 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IdeaRepository extends JpaRepository<Idea, Integer> {
-    @Modifying
-    @Query(value = "CALL process_idea(:ideaId, :newStatus)", nativeQuery = true)
-    void processIdea(@Param("ideaId") Integer ideaId, @Param("newStatus") String newStatus);
+  @Modifying
+  @Query(value = "CALL process_idea(:ideaId, :newStatus)", nativeQuery = true)
+  void processIdea(@Param("ideaId") Integer ideaId, @Param("newStatus") String newStatus);
 
-    Page<Idea> findAllByStatusEnumId(Idea.Status status, Pageable pageable);
+  Page<Idea> findAllByStatusEnumId(Idea.Status status, Pageable pageable);
 }
