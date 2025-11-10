@@ -10,5 +10,5 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class IdeaDto {
-    private String description;
+  private String description;
 }

@@ -7,6 +7,7 @@ import net.alephdev.calendar.models.User;
 @Getter
 @AllArgsConstructor
 public class JwtResponseDto {
-    private final String token;
-    private final User user;
+  private final String token;
+
+  private final User user;
 }

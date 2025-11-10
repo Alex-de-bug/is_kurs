@@ -6,5 +6,5 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class ObjectDto {
-    private Object result;
+  private Object result;
 }
