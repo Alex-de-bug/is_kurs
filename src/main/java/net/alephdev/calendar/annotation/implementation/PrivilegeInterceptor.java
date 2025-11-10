@@ -14,32 +14,33 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 @Component
 public class PrivilegeInterceptor implements HandlerInterceptor {
-    @Autowired
-    private UserService userService;
+  @Autowired private UserService userService;
 
-    @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        if (handler instanceof HandlerMethod) {
-            HandlerMethod handlerMethod = (HandlerMethod) handler;
+  @Override
+  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+      throws Exception {
+    if (handler instanceof HandlerMethod) {
+      HandlerMethod handlerMethod = (HandlerMethod) handler;
 
-            PrivilegeRequired privelegeRequired = handlerMethod.getMethodAnnotation(PrivilegeRequired.class);
-            if (privelegeRequired != null) {
-                return checkPrivilege(response);
-            }
-        }
+      PrivilegeRequired privelegeRequired =
+          handlerMethod.getMethodAnnotation(PrivilegeRequired.class);
+      if (privelegeRequired != null) {
+        return checkPrivilege(response);
+      }
+    }
+    return true;
+  }
+
+  private boolean checkPrivilege(HttpServletResponse response) throws Exception {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication != null && authentication.isAuthenticated()) {
+      String username = authentication.getName();
+      User user = userService.getUserByLogin(username);
+      if (user.getRole() != null && user.getRole().getId() == 1) {
         return true;
+      }
     }
-
-    private boolean checkPrivilege(HttpServletResponse response) throws Exception {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-            User user = userService.getUserByLogin(username);
-            if (user.getRole() != null && user.getRole().getId() == 1) {
-                return true;
-            }
-        }
-        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-        return false;
-    }
+    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+    return false;
+  }
 }

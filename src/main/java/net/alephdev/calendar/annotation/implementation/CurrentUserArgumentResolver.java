@@ -15,26 +15,31 @@ import org.springframework.web.method.support.ModelAndViewContainer;
 @Component
 public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
 
-    private final UserService userService;
+  private final UserService userService;
 
-    public CurrentUserArgumentResolver(UserService userService) {
-        this.userService = userService;
+  public CurrentUserArgumentResolver(UserService userService) {
+    this.userService = userService;
+  }
+
+  @Override
+  public boolean supportsParameter(MethodParameter parameter) {
+    return parameter.getParameterAnnotation(CurrentUser.class) != null
+        && parameter.getParameterType().equals(User.class);
+  }
+
+  @Override
+  public Object resolveArgument(
+      MethodParameter parameter,
+      ModelAndViewContainer mavContainer,
+      NativeWebRequest webRequest,
+      WebDataBinderFactory binderFactory)
+      throws Exception {
+
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    if (authentication != null && authentication.isAuthenticated()) {
+      String username = authentication.getName();
+      return userService.getUserByLogin(username);
     }
-
-    @Override
-    public boolean supportsParameter(MethodParameter parameter) {
-        return parameter.getParameterAnnotation(CurrentUser.class) != null && parameter.getParameterType().equals(User.class);
-    }
-
-    @Override
-    public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer,
-                                  NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated()) {
-            String username = authentication.getName();
-            return userService.getUserByLogin(username);
-        }
-        return null;
-    }
+    return null;
+  }
 }

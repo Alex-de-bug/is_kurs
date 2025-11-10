@@ -13,31 +13,33 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
 
-    @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        if (handler instanceof HandlerMethod) {
-            HandlerMethod handlerMethod = (HandlerMethod) handler;
+  @Override
+  public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
+      throws Exception {
+    if (handler instanceof HandlerMethod) {
+      HandlerMethod handlerMethod = (HandlerMethod) handler;
 
-            AuthorizedRequired authorizedRequired = handlerMethod.getMethodAnnotation(AuthorizedRequired.class);
-            if (authorizedRequired != null) {
-                return checkAuthentication(response);
-            }
+      AuthorizedRequired authorizedRequired =
+          handlerMethod.getMethodAnnotation(AuthorizedRequired.class);
+      if (authorizedRequired != null) {
+        return checkAuthentication(response);
+      }
 
-            authorizedRequired = handlerMethod.getBeanType().getAnnotation(AuthorizedRequired.class);
-            if (authorizedRequired != null) {
-                return checkAuthentication(response);
-            }
-        }
-        return true;
+      authorizedRequired = handlerMethod.getBeanType().getAnnotation(AuthorizedRequired.class);
+      if (authorizedRequired != null) {
+        return checkAuthentication(response);
+      }
     }
+    return true;
+  }
 
-    private boolean checkAuthentication(HttpServletResponse response) throws Exception {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+  private boolean checkAuthentication(HttpServletResponse response) throws Exception {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return false;
-        }
-        return true;
+    if (authentication == null || authentication instanceof AnonymousAuthenticationToken) {
+      response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+      return false;
     }
+    return true;
+  }
 }
