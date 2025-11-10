@@ -7,19 +7,18 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class IsDayOffService implements CalendarServiceInterface {
-    @Value("${service.calendar.url}")
-    private String calendarUrl;
+  @Value("${service.calendar.url}")
+  private String calendarUrl;
 
-    private final RestTemplate restTemplate;
+  private final RestTemplate restTemplate;
 
-    public IsDayOffService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
+  public IsDayOffService(RestTemplate restTemplate) {
+    this.restTemplate = restTemplate;
+  }
 
-    @Override
-    public String getDayOffData(int year) {
-        String url = String.format(calendarUrl, year);
-        return restTemplate.getForObject(url, String.class);
-    }
+  @Override
+  public String getDayOffData(int year) {
+    String url = String.format(calendarUrl, year);
+    return restTemplate.getForObject(url, String.class);
+  }
 }
-
