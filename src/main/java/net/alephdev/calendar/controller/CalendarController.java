@@ -17,20 +17,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/calendar")
 @Cacheable("calendarData")
 public class CalendarController {
-    private final CalendarServiceInterface calendarService;
+  private final CalendarServiceInterface calendarService;
 
-    @GetMapping
-    @AuthorizedRequired
-    public ResponseEntity<MessageDto> getCalendar(
-            @RequestParam int year
-    ) {
-        try {
-            String response = calendarService.getDayOffData(year);
-            return ResponseEntity.ok(new MessageDto(response));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new MessageDto("Не удалось получить информацию для календаря"));
-        }
+  @GetMapping
+  @AuthorizedRequired
+  public ResponseEntity<MessageDto> getCalendar(
+      @RequestParam
+          int year) {
+    try {
+      String response = calendarService.getDayOffData(year);
+      return ResponseEntity.ok(new MessageDto(response));
+    } catch (Exception e) {
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body(new MessageDto("Не удалось получить информацию для календаря"));
     }
-
+  }
 }

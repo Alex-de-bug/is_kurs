@@ -1,5 +1,6 @@
 package net.alephdev.calendar.controller;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import net.alephdev.calendar.WebSocketHandler;
 import net.alephdev.calendar.annotation.AuthorizedRequired;
@@ -12,9 +13,15 @@ import net.alephdev.calendar.service.TagService;
 import net.alephdev.calendar.service.TaskService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/tags")
@@ -22,65 +29,75 @@ import java.util.List;
 @RequiredArgsConstructor
 public class TagController {
 
-    private final TagService tagService;
-    private final TaskService taskService;
-    private final WebSocketHandler webSocketHandler;
+  private final TagService tagService;
+  private final TaskService taskService;
+  private final WebSocketHandler webSocketHandler;
 
-    @GetMapping
-    public List<Tag> getAllTags() {
-        return tagService.getAllTags();
-    }
+  @GetMapping
+  public List<Tag> getAllTags() {
+    return tagService.getAllTags();
+  }
 
-    @PrivilegeRequired
-    @PostMapping
-    public ResponseEntity<Tag> createTag(@RequestBody Tag tag) {
-        Tag createdTag = tagService.createTag(tag);
-        webSocketHandler.notifyClients("tag");
-        return new ResponseEntity<>(createdTag, HttpStatus.CREATED);
-    }
+  @PrivilegeRequired
+  @PostMapping
+  public ResponseEntity<Tag> createTag(
+          @RequestBody
+          Tag tag) {
+    Tag createdTag = tagService.createTag(tag);
+    webSocketHandler.notifyClients("tag");
+    return new ResponseEntity<>(createdTag, HttpStatus.CREATED);
+  }
 
-    @PrivilegeRequired
-    @PutMapping("/{id}")
-    public ResponseEntity<Tag> updateTag(@PathVariable Integer id, @RequestBody Tag updatedTag) {
-        Tag tag = tagService.updateTag(id, updatedTag);
-        webSocketHandler.notifyClients("tag", id);
-        return new ResponseEntity<>(tag, HttpStatus.OK);
-    }
+  @PrivilegeRequired
+  @PutMapping("/{id}")
+  public ResponseEntity<Tag> updateTag(
+      @PathVariable Integer id,
+      
+          @RequestBody
+          Tag updatedTag) {
+    Tag tag = tagService.updateTag(id, updatedTag);
+    webSocketHandler.notifyClients("tag", id);
+    return new ResponseEntity<>(tag, HttpStatus.OK);
+  }
 
-    @PrivilegeRequired
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTag(@PathVariable Integer id) {
-        ResponseEntity<Void> result = tagService.deleteTag(id);
-        webSocketHandler.notifyClients("tag", id);
-        return result;
-    }
+  @PrivilegeRequired
+  @DeleteMapping("/{id}")
+  public ResponseEntity<Void> deleteTag(
+      @PathVariable Integer id) {
+    ResponseEntity<Void> result = tagService.deleteTag(id);
+    webSocketHandler.notifyClients("tag", id);
+    return result;
+  }
 
+  @PostMapping("/task/{taskId}")
+  public ResponseEntity<?> addTagToTask(
+      @PathVariable Integer taskId,
+      @RequestParam Integer tagId,
+      @CurrentUser User user) {
+    Task task = taskService.getTask(taskId);
+    Tag tag = tagService.getTag(tagId);
 
-    @PostMapping("/task/{taskId}")
-    public ResponseEntity<?> addTagToTask(@PathVariable Integer taskId, @RequestParam Integer tagId, @CurrentUser User user) {
-        Task task = taskService.getTask(taskId);
-        Tag tag = tagService.getTag(tagId);
+    tagService.addTagToTask(task, tag, user);
+    webSocketHandler.notifyClients("task", taskId);
+    return new ResponseEntity<>(HttpStatus.OK);
+  }
 
-        tagService.addTagToTask(task, tag, user);
-        webSocketHandler.notifyClients("task", taskId);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
+  @DeleteMapping("/task/{taskId}")
+  public ResponseEntity<?> removeTagFromTask(
+      @PathVariable Integer taskId, @RequestParam Integer tagId, @CurrentUser User user) {
+    Task task = taskService.getTask(taskId);
+    Tag tag = tagService.getTag(tagId);
 
+    tagService.removeTagFromTask(task, tag, user);
+    webSocketHandler.notifyClients("task", taskId);
+    return new ResponseEntity<>(HttpStatus.OK);
+  }
 
-    @DeleteMapping("/task/{taskId}")
-    public ResponseEntity<?> removeTagFromTask(@PathVariable Integer taskId, @RequestParam Integer tagId, @CurrentUser User user) {
-        Task task = taskService.getTask(taskId);
-        Tag tag = tagService.getTag(tagId);
-
-        tagService.removeTagFromTask(task, tag, user);
-        webSocketHandler.notifyClients("task", taskId);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @GetMapping("/task/{taskId}")
-    public ResponseEntity<List<Tag>> getTagsForTask(@PathVariable Integer taskId) {
-        Task task = taskService.getTask(taskId);
-        List<Tag> tags = tagService.getTagsForTask(task);
-        return new ResponseEntity<>(tags, HttpStatus.OK);
-    }
+  @GetMapping("/task/{taskId}")
+  public ResponseEntity<List<Tag>> getTagsForTask(
+      @PathVariable Integer taskId) {
+    Task task = taskService.getTask(taskId);
+    List<Tag> tags = tagService.getTagsForTask(task);
+    return new ResponseEntity<>(tags, HttpStatus.OK);
+  }
 }
