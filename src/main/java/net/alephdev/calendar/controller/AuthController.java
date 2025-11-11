@@ -1,5 +1,11 @@
 package net.alephdev.calendar.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import net.alephdev.calendar.dto.JwtRequestDto;
@@ -24,12 +30,27 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Tag(name = "Аутентификация", description = "API для аутентификации пользователей")
 public class AuthController {
   private final AuthenticationManager authenticationManager;
   private final UserService userService;
   private final JwtUtils jwtUtils;
   private final TaskService taskService;
 
+  @Operation(
+      summary = "Вход в систему",
+      description = "Аутентификация пользователя и получение JWT токена")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Успешная аутентификация",
+            content = @Content(schema = @Schema(implementation = JwtResponseDto.class))),
+        @ApiResponse(
+            responseCode = "401",
+            description = "Неверные учетные данные",
+            content = @Content(schema = @Schema(implementation = MessageDto.class)))
+      })
   @PostMapping("/login")
   public ResponseEntity<?> loginUser(@Valid @RequestBody JwtRequestDto authenticationRequest) {
     try {

@@ -1,5 +1,13 @@
 package net.alephdev.calendar.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import net.alephdev.calendar.WebSocketHandler;
@@ -32,6 +40,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/risks")
 @AuthorizedRequired
 @RequiredArgsConstructor
+@Tag(name = "Риски", description = "API для управления рисками")
+@SecurityRequirement(name = "Bearer Authentication")
 public class RiskController {
 
   private final RiskService riskService;
@@ -39,18 +49,39 @@ public class RiskController {
   private final IdeaService ideaService;
   private final WebSocketHandler webSocketHandler;
 
+  @Operation(
+      summary = "Получить все риски",
+      description = "Получение списка рисков с возможностью фильтрации по описанию")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Список рисков успешно получен",
+            content = @Content(schema = @Schema(implementation = Page.class)))
+      })
   @GetMapping
   public Page<Risk> getAllRisks(
-      @RequestParam @DefaultValue("0")
+      @Parameter(description = "Номер страницы", example = "0") @RequestParam @DefaultValue("0")
           int page,
-      @RequestParam
+      @Parameter(description = "Описание для поиска", example = "технический") @RequestParam
           String description) {
     return riskService.getAllRisks(page, description);
   }
 
+  @Operation(summary = "Создать риск", description = "Создание нового риска (требуются привилегии)")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Риск успешно создан",
+            content = @Content(schema = @Schema(implementation = Risk.class))),
+        @ApiResponse(responseCode = "403", description = "Недостаточно прав доступа")
+      })
   @PrivilegeRequired
   @PostMapping
   public ResponseEntity<Risk> createRisk(
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "Данные для создания риска")
           @RequestBody
           Risk risk) {
     Risk createdRisk = riskService.createRisk(risk);
@@ -58,10 +89,24 @@ public class RiskController {
     return new ResponseEntity<>(createdRisk, HttpStatus.CREATED);
   }
 
+  @Operation(
+      summary = "Обновить риск",
+      description = "Обновление существующего риска (требуются привилегии)")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Риск успешно обновлен",
+            content = @Content(schema = @Schema(implementation = Risk.class))),
+        @ApiResponse(responseCode = "403", description = "Недостаточно прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Риск не найден")
+      })
   @PrivilegeRequired
   @PutMapping("/{id}")
   public ResponseEntity<Risk> updateRisk(
-      @PathVariable Integer id,
+      @Parameter(description = "ID риска", example = "1") @PathVariable Integer id,
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "Обновленные данные риска")
           @RequestBody
           Risk updatedRisk) {
     Risk risk = riskService.updateRisk(id, updatedRisk);
@@ -69,20 +114,33 @@ public class RiskController {
     return new ResponseEntity<>(risk, HttpStatus.OK);
   }
 
+  @Operation(summary = "Удалить риск", description = "Удаление риска (требуются привилегии)")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "204", description = "Риск успешно удален"),
+        @ApiResponse(responseCode = "403", description = "Недостаточно прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Риск не найден")
+      })
   @PrivilegeRequired
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteRisk(
-      @PathVariable Integer id) {
+      @Parameter(description = "ID риска", example = "1") @PathVariable Integer id) {
     ResponseEntity<Void> result = riskService.deleteRisk(id);
     webSocketHandler.notifyClients("risk");
     return result;
   }
 
+  @Operation(summary = "Добавить риск к задаче", description = "Связывание риска с задачей")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Риск успешно добавлен к задаче"),
+        @ApiResponse(responseCode = "404", description = "Задача или риск не найдены")
+      })
   @PostMapping("/task/{taskId}")
   public ResponseEntity<?> addRiskToTask(
-      @PathVariable Integer taskId,
-      @RequestParam Integer riskId,
-      @CurrentUser User user) {
+      @Parameter(description = "ID задачи", example = "1") @PathVariable Integer taskId,
+      @Parameter(description = "ID риска", example = "1") @RequestParam Integer riskId,
+      @Parameter(hidden = true) @CurrentUser User user) {
     Task task = taskService.getTask(taskId);
     Risk risk = riskService.getRisk(riskId);
 
@@ -93,10 +151,16 @@ public class RiskController {
   }
 
   @DeleteMapping("/task/{taskId}")
+  @Operation(summary = "Удалить риск из задачи", description = "Удаление связи риска с задачей")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Риск успешно удален из задачи"),
+        @ApiResponse(responseCode = "404", description = "Задача или риск не найдены")
+      })
   public ResponseEntity<?> removeRiskFromTask(
-      @PathVariable Integer taskId,
-      @RequestParam Integer riskId,
-      @CurrentUser User user) {
+      @Parameter(description = "ID задачи", example = "1") @PathVariable Integer taskId,
+      @Parameter(description = "ID риска", example = "1") @RequestParam Integer riskId,
+      @Parameter(hidden = true) @CurrentUser User user) {
     Task task = taskService.getTask(taskId);
     Risk risk = riskService.getRisk(riskId);
 
@@ -106,8 +170,18 @@ public class RiskController {
   }
 
   @GetMapping("/task/{taskId}")
+  @Operation(
+      summary = "Получить риски задачи",
+      description = "Получение списка рисков, связанных с задачей")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Список рисков задачи успешно получен",
+            content = @Content(schema = @Schema(implementation = Risk.class)))
+      })
   public ResponseEntity<List<Risk>> getRisksForTask(
-      @PathVariable Integer taskId) {
+      @Parameter(description = "ID задачи", example = "1") @PathVariable Integer taskId) {
     Task task = taskService.getTask(taskId);
     List<Risk> risks = riskService.getRisksForTask(task);
 
@@ -115,10 +189,16 @@ public class RiskController {
   }
 
   @PostMapping("/idea/{ideaId}")
+  @Operation(summary = "Добавить риск к идее", description = "Связывание риска с идеей")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Риск успешно добавлен к идее"),
+        @ApiResponse(responseCode = "404", description = "Идея или риск не найдены")
+      })
   public ResponseEntity<?> addRiskToIdea(
-      @PathVariable Integer ideaId,
-      @RequestParam Integer riskId,
-      @CurrentUser User user) {
+      @Parameter(description = "ID идеи", example = "1") @PathVariable Integer ideaId,
+      @Parameter(description = "ID риска", example = "1") @RequestParam Integer riskId,
+      @Parameter(hidden = true) @CurrentUser User user) {
     Idea idea = ideaService.getIdea(ideaId);
     Risk risk = riskService.getRisk(riskId);
 
@@ -128,10 +208,16 @@ public class RiskController {
   }
 
   @DeleteMapping("/idea/{ideaId}")
+  @Operation(summary = "Удалить риск из идеи", description = "Удаление связи риска с идеей")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Риск успешно удален из идеи"),
+        @ApiResponse(responseCode = "404", description = "Идея или риск не найдены")
+      })
   public ResponseEntity<?> removeRiskFromIdea(
-      @PathVariable Integer ideaId,
-      @RequestParam Integer riskId,
-      @CurrentUser User user) {
+      @Parameter(description = "ID идеи", example = "1") @PathVariable Integer ideaId,
+      @Parameter(description = "ID риска", example = "1") @RequestParam Integer riskId,
+      @Parameter(hidden = true) @CurrentUser User user) {
     Idea idea = ideaService.getIdea(ideaId);
     Risk risk = riskService.getRisk(riskId);
 
@@ -141,14 +227,34 @@ public class RiskController {
   }
 
   @GetMapping("/idea/{ideaId}")
+  @Operation(
+      summary = "Получить риски идеи",
+      description = "Получение списка рисков, связанных с идеей")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Список рисков идеи успешно получен",
+            content = @Content(schema = @Schema(implementation = Risk.class)))
+      })
   public ResponseEntity<List<Risk>> getRisksForIdea(
-      @PathVariable Integer ideaId) {
+      @Parameter(description = "ID идеи", example = "1") @PathVariable Integer ideaId) {
     Idea idea = ideaService.getIdea(ideaId);
     List<Risk> risks = riskService.getRisksForIdea(idea);
 
     return ResponseEntity.ok(risks);
   }
 
+  @Operation(
+      summary = "Получить топ-10 рисков",
+      description = "Получение списка топ-10 наиболее часто встречающихся рисков в задачах")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Список топ-10 рисков успешно получен",
+            content = @Content(schema = @Schema(implementation = TopRiskDto.class)))
+      })
   @GetMapping("/top10")
   public ResponseEntity<List<TopRiskDto>> getTop10TaskRisks() {
     return ResponseEntity.ok(riskService.getTop10TaskRisks());

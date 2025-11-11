@@ -1,5 +1,13 @@
 package net.alephdev.calendar.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import net.alephdev.calendar.WebSocketHandler;
 import net.alephdev.calendar.annotation.AuthorizedRequired;
@@ -23,6 +31,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/teams")
 @AuthorizedRequired
+@Tag(name = "Команды", description = "API для управления командами")
+@SecurityRequirement(name = "Bearer Authentication")
 public class TeamController {
 
   private final TeamService teamService;
@@ -34,9 +44,19 @@ public class TeamController {
     this.webSocketHandler = webSocketHandler;
   }
 
+  @Operation(
+      summary = "Получить все команды",
+      description = "Получение списка команд с возможностью фильтрации по активности")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Список команд успешно получен",
+            content = @Content(schema = @Schema(implementation = Team.class)))
+      })
   @GetMapping
   public List<Team> getAllTeams(
-      
+      @Parameter(description = "Показывать только активные команды", example = "true")
           @RequestParam(required = false)
           boolean onlyActive) {
     if (onlyActive) {
@@ -45,9 +65,22 @@ public class TeamController {
     return teamService.getAllTeams();
   }
 
+  @Operation(
+      summary = "Создать команду",
+      description = "Создание новой команды (требуются привилегии)")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Команда успешно создана",
+            content = @Content(schema = @Schema(implementation = Team.class))),
+        @ApiResponse(responseCode = "403", description = "Недостаточно прав доступа")
+      })
   @PrivilegeRequired
   @PostMapping
   public ResponseEntity<Team> createTeam(
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "Данные для создания команды")
           @RequestBody
           Team team) {
     Team createdTeam = teamService.createTeam(team);
@@ -55,10 +88,24 @@ public class TeamController {
     return new ResponseEntity<>(createdTeam, HttpStatus.CREATED);
   }
 
+  @Operation(
+      summary = "Обновить команду",
+      description = "Обновление существующей команды (требуются привилегии)")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Команда успешно обновлена",
+            content = @Content(schema = @Schema(implementation = Team.class))),
+        @ApiResponse(responseCode = "403", description = "Недостаточно прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Команда не найдена")
+      })
   @PrivilegeRequired
   @PutMapping("/{id}")
   public ResponseEntity<Team> updateTeam(
-      @PathVariable Integer id,
+      @Parameter(description = "ID команды", example = "1") @PathVariable Integer id,
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "Обновленные данные команды")
           @RequestBody
           Team updatedTeam) {
     Team team = teamService.updateTeam(id, updatedTeam);
@@ -66,17 +113,34 @@ public class TeamController {
     return new ResponseEntity<>(team, HttpStatus.OK);
   }
 
+  @Operation(
+      summary = "Получить нагрузку команды",
+      description = "Получение информации о нагрузке команды в спринте")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Нагрузка команды успешно получена",
+            content = @Content(schema = @Schema(implementation = ObjectDto.class)))
+      })
   @GetMapping("/load")
   public ResponseEntity<ObjectDto> getTeamLoad(
-      @RequestParam Integer teamId,
-      @RequestParam Integer sprintId) {
+      @Parameter(description = "ID команды", example = "1") @RequestParam Integer teamId,
+      @Parameter(description = "ID спринта", example = "1") @RequestParam Integer sprintId) {
     return ResponseEntity.ok(new ObjectDto(teamService.getTeamLoad(teamId, sprintId)));
   }
 
+  @Operation(summary = "Удалить команду", description = "Удаление команды (требуются привилегии)")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "204", description = "Команда успешно удалена"),
+        @ApiResponse(responseCode = "403", description = "Недостаточно прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Команда не найдена")
+      })
   @PrivilegeRequired
   @DeleteMapping("/{id}")
   public ResponseEntity<Void> deleteTeam(
-      @PathVariable Integer id) {
+      @Parameter(description = "ID команды", example = "1") @PathVariable Integer id) {
     ResponseEntity<Void> result = teamService.deleteTeam(id);
     webSocketHandler.notifyClients("team", id);
     return result;

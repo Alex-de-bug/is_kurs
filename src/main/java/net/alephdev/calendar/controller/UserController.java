@@ -1,5 +1,13 @@
 package net.alephdev.calendar.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import net.alephdev.calendar.WebSocketHandler;
 import net.alephdev.calendar.annotation.AuthorizedRequired;
@@ -27,6 +35,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/users")
 @AuthorizedRequired
+@Tag(name = "Пользователи", description = "API для управления пользователями")
+@SecurityRequirement(name = "Bearer Authentication")
 public class UserController {
 
   private final UserService userService;
@@ -41,16 +51,31 @@ public class UserController {
     this.webSocketHandler = webSocketHandler;
   }
 
+  @Operation(
+      summary = "Получить всех пользователей",
+      description =
+          "Получение списка пользователей с возможностью фильтрации по логину, команде и"
+              + " активности")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Список пользователей успешно получен",
+            content = @Content(schema = @Schema(implementation = Page.class)))
+      })
   @GetMapping
   public Page<User> getAllUsers(
-      @RequestParam @DefaultValue("0")
+      @Parameter(description = "Номер страницы", example = "0") @RequestParam @DefaultValue("0")
           int page,
-      @RequestParam(required = false)
+      @Parameter(description = "Частичный логин для поиска", example = "john")
+          @RequestParam(required = false)
           String login,
-      @RequestParam
+      @Parameter(description = "ID команды для фильтрации", example = "1")
+          @RequestParam
           @DefaultValue("0")
           int team,
-      @RequestParam(required = false)
+      @Parameter(description = "Показывать только активных пользователей", example = "true")
+          @RequestParam(required = false)
           @DefaultValue("true")
           boolean onlyActive) {
     if (login != null) {
@@ -61,16 +86,39 @@ public class UserController {
     return userService.getAllUsers(page);
   }
 
+  @Operation(
+      summary = "Получить текущего пользователя",
+      description = "Получение информации о текущем аутентифицированном пользователе")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Информация о пользователе получена",
+            content = @Content(schema = @Schema(implementation = User.class)))
+      })
   @GetMapping("/current")
-  public User getCurrentUser(@CurrentUser User user) {
+  public User getCurrentUser(@Parameter(hidden = true) @CurrentUser User user) {
     user.setCanCreateTasks(taskService.canCreateTask(user));
     return user;
   }
 
+  @Operation(
+      summary = "Регистрация пользователя",
+      description = "Создание нового пользователя (требуются привилегии)")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Пользователь успешно создан",
+            content = @Content(schema = @Schema(implementation = User.class))),
+        @ApiResponse(responseCode = "403", description = "Недостаточно прав доступа")
+      })
   @PrivilegeRequired
   @PostMapping("/register")
   public ResponseEntity<User> registerUser(
-      @Valid
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "Данные для регистрации пользователя")
+          @Valid
           @RequestBody
           UserDto userDto) {
     User user = userService.register(userDto);
@@ -78,37 +126,75 @@ public class UserController {
     return new ResponseEntity<>(user, HttpStatus.CREATED);
   }
 
+  @Operation(
+      summary = "Обновить роль пользователя",
+      description = "Изменение роли пользователя (требуются привилегии)")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Роль пользователя успешно обновлена",
+            content = @Content(schema = @Schema(implementation = User.class))),
+        @ApiResponse(responseCode = "403", description = "Недостаточно прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Пользователь не найден")
+      })
   @PrivilegeRequired
   @PutMapping("/{login}/role")
   public ResponseEntity<User> updateUserRole(
-      @PathVariable
+      @Parameter(description = "Логин пользователя", example = "john.doe") @PathVariable
           String login,
-      @RequestParam Integer roleId) {
+      @Parameter(description = "ID новой роли", example = "2") @RequestParam Integer roleId) {
     User user = userService.updateRole(login, roleId);
     webSocketHandler.notifyClients("user", login);
     return new ResponseEntity<>(user, HttpStatus.OK);
   }
 
+  @Operation(
+      summary = "Обновить команду пользователя",
+      description = "Изменение команды пользователя (требуются привилегии)")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Команда пользователя успешно обновлена",
+            content = @Content(schema = @Schema(implementation = User.class))),
+        @ApiResponse(responseCode = "403", description = "Недостаточно прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Пользователь не найден")
+      })
   @PrivilegeRequired
   @PutMapping("/{login}/team")
   public ResponseEntity<User> updateUserTeam(
-      @PathVariable
+      @Parameter(description = "Логин пользователя", example = "john.doe") @PathVariable
           String login,
-      @RequestParam(required = false)
+      @Parameter(description = "ID новой команды", example = "1") @RequestParam(required = false)
           Integer teamId) {
     User user = userService.updateUserTeam(login, teamId);
     webSocketHandler.notifyClients("user", login);
     return new ResponseEntity<>(user, HttpStatus.OK);
   }
 
+  @Operation(
+      summary = "Обновить данные пользователя",
+      description = "Обновление информации о пользователе")
+  @ApiResponses(
+      value = {
+        @ApiResponse(
+            responseCode = "200",
+            description = "Данные пользователя успешно обновлены",
+            content = @Content(schema = @Schema(implementation = User.class))),
+        @ApiResponse(responseCode = "403", description = "Недостаточно прав для редактирования"),
+        @ApiResponse(responseCode = "404", description = "Пользователь не найден")
+      })
   @PutMapping("/{login}")
   public ResponseEntity<User> updateUser(
-      @PathVariable
+      @Parameter(description = "Логин пользователя", example = "john.doe") @PathVariable
           String login,
-      @Valid
+      @io.swagger.v3.oas.annotations.parameters.RequestBody(
+              description = "Обновленные данные пользователя")
+          @Valid
           @RequestBody
           UserDto userDto,
-      @CurrentUser User currentUser) {
+      @Parameter(hidden = true) @CurrentUser User currentUser) {
     if (currentUser.getLogin().equals(login) || userService.isPrivileged(currentUser)) {
       User user = userService.updateUser(login, userDto);
       webSocketHandler.notifyClients("user", login);
@@ -118,11 +204,20 @@ public class UserController {
     }
   }
 
+  @Operation(
+      summary = "Удалить пользователя",
+      description = "Удаление пользователя из системы (требуются привилегии)")
+  @ApiResponses(
+      value = {
+        @ApiResponse(responseCode = "200", description = "Пользователь успешно удален"),
+        @ApiResponse(responseCode = "403", description = "Недостаточно прав доступа"),
+        @ApiResponse(responseCode = "404", description = "Пользователь не найден")
+      })
   @DeleteMapping("/{login}")
   public ResponseEntity<Void> wipeUser(
-      @PathVariable
+      @Parameter(description = "Логин пользователя", example = "john.doe") @PathVariable
           String login,
-      @CurrentUser User currentUser) {
+      @Parameter(hidden = true) @CurrentUser User currentUser) {
     if (userService.isPrivileged(currentUser)) {
       userService.wipeUser(login);
       webSocketHandler.notifyClients("userWipe", login);
