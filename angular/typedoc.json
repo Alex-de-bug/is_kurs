@@ -1,0 +1,45 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "name": "Calendar Application Documentation",
+  "entryPoints": [
+    "./src/app"
+  ],
+  "entryPointStrategy": "expand",
+  "out": "./docs",
+  "exclude": [
+    "**/*.spec.ts",
+    "**/node_modules/**",
+    "**/test/**",
+    "**/environments/**"
+  ],
+  "excludePrivate": false,
+  "excludeProtected": false,
+  "excludeExternals": true,
+  "readme": "../README.md",
+  "plugin": [],
+  "theme": "default",
+  "hideGenerator": false,
+  "searchInComments": true,
+  "validation": {
+    "invalidLink": true,
+    "notExported": false
+  },
+  "categorizeByGroup": true,
+  "sort": [
+    "kind",
+    "alphabetical"
+  ],
+  "kindSortOrder": [
+    "Class",
+    "Interface",
+    "Enum",
+    "Function",
+    "TypeAlias",
+    "Variable"
+  ],
+  "navigationLinks": {
+    "GitHub": "https://github.com/your-repo/is_kurs"
+  },
+  "includeVersion": true
+}
+
