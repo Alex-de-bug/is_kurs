@@ -7,11 +7,19 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import {IconDefinition} from "@fortawesome/fontawesome-common-types";
 
+/**
+ * Возвращает иконку и цвет для отображения приоритета задачи.
+ */
 @Pipe({
   standalone: true,
   name: 'priorityIcon'
 })
 export class PriorityIconPipe implements PipeTransform {
+  /**
+   * Подбирает иконку и цвет по значению приоритета.
+   *
+   * @param value Приоритет задачи
+   */
   transform(value: TaskPriority): { icon: IconDefinition, color: string } {
     switch (value) {
       case TaskPriority.LOW:
