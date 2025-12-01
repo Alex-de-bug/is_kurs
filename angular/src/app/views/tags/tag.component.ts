@@ -24,6 +24,12 @@ import {LoaderService} from "../../services/loader.service";
 import {WebsocketService} from "../../services/websocket.service";
 import {Subscription} from "rxjs";
 
+/**
+ * Страница управления тегами задач.
+ *
+ * Позволяет создавать, редактировать и удалять теги, а также
+ * автоматически обновляет список при WebSocket‑событиях.
+ */
 @Component({
   selector: 'app-tag',
   standalone: true,
@@ -80,21 +86,33 @@ export class TagComponent implements OnInit, OnDestroy {
     this.currentUser = this.authService.getUser();
   }
 
+  /**
+   * Проверяет, является ли текущий пользователь администратором.
+   */
   get isAdmin() : boolean {
     return this.currentUser && this.currentUser.role && this.currentUser.role.id === 1 || false;
   }
 
+  /**
+   * Возвращает список колонок таблицы в зависимости от прав пользователя.
+   */
   get tableColumns() : string[] {
     let baseColumns = ['Название', 'Описание'];
     if(this.isAdmin) baseColumns.push('Действия');
     return baseColumns;
   }
 
+  /**
+   * Инициализирует компонент: загружает теги и инициализирует Flowbite.
+   */
   ngOnInit() {
     this.updateTags();
     initFlowbite();
   }
 
+  /**
+   * Загружает список тегов с сервера.
+   */
   updateTags(){
     this.tagService.getAllTags().subscribe(tags => {
       if(!this.initialized) {
@@ -106,12 +124,20 @@ export class TagComponent implements OnInit, OnDestroy {
     })
   }
 
+  /**
+   * Открывает модальное окно создания тега.
+   */
   openCreateModal(){
     this.modalService.open(CreateTagModalComponent, {
       size: 'lg'
     });
   }
 
+  /**
+   * Открывает модальное окно редактирования выбранного тега.
+   *
+   * @param tag Тег для редактирования
+   */
   openEditModal(tag: Tag){
     if (tag) {
       const modalRef = this.modalService.open(CreateTagModalComponent, {
@@ -121,6 +147,11 @@ export class TagComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Открывает модальное окно удаления тега и при подтверждении отправляет запрос.
+   *
+   * @param tag Тег для удаления
+   */
   openDeleteModal(tag: Tag) {
     const modalRef = this.modalService.open(ConfirmModalComponent, {
       size: 'md'

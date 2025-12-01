@@ -22,6 +22,12 @@ import {LoaderService} from "../../services/loader.service";
 import {WebsocketService} from "../../services/websocket.service";
 import {Subscription} from "rxjs";
 
+/**
+ * Страница управления статусами задач.
+ *
+ * Отображает список статусов с возможностью создания, редактирования и удаления
+ * (для администраторов) и обновляется по WebSocket‑событиям.
+ */
 @Component({
   selector: 'app-status',
   standalone: true,
@@ -72,25 +78,40 @@ export class StatusComponent implements OnInit, OnDestroy {
     this.wss.unsubscribe();
   }
 
+  /**
+   * Загружает данные текущего пользователя.
+   */
   loadUserData() {
     this.currentUser = this.authService.getUser();
   }
 
+  /**
+   * Проверяет, является ли текущий пользователь администратором.
+   */
   get isAdmin() : boolean {
     return this.currentUser && this.currentUser.role && this.currentUser.role.id === 1 || false;
   }
 
+  /**
+   * Возвращает список колонок таблицы в зависимости от прав пользователя.
+   */
   get tableColumns() : string[] {
     let baseColumns = ['Название', 'Описание'];
     if(this.isAdmin) baseColumns.push('Действия');
     return baseColumns;
   }
 
+  /**
+   * Инициализирует компонент: загружает статусы и инициализирует Flowbite.
+   */
   ngOnInit() {
     this.updateStatuses();
     initFlowbite();
   }
 
+  /**
+   * Загружает список статусов с сервера.
+   */
   updateStatuses(){
     this.statusService.getAllStatuses().subscribe(statuses => {
       if(!this.initialized) {
@@ -105,12 +126,20 @@ export class StatusComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Открывает модальное окно создания статуса.
+   */
   openCreateModal() {
     this.modalService.open(CreateStatusModalComponent, {
       size: 'lg'
     });
   }
 
+  /**
+   * Открывает модальное окно редактирования выбранного статуса.
+   *
+   * @param status Статус для редактирования
+   */
   openEditModal(status: Status) {
     if (status) {
       const modalRef = this.modalService.open(CreateStatusModalComponent, {
@@ -120,6 +149,11 @@ export class StatusComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Открывает модальное окно удаления статуса и при подтверждении отправляет запрос.
+   *
+   * @param status Статус для удаления
+   */
   openDeleteModal(status: Status) {
     const modalRef = this.modalService.open(ConfirmModalComponent, {
       size: 'md'

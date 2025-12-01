@@ -18,6 +18,11 @@ import {TableCellComponent} from "../../../components/table/table-cell.component
 import {WebsocketService} from "../../../services/websocket.service";
 import {Subscription} from "rxjs";
 
+/**
+ * Модальное окно загрузки команды по выбранному спринту.
+ *
+ * Показывает суммарную загрузку и распределение сторипоинтов по пользователям.
+ */
 @Component({
   selector: 'app-team-load-modal',
   standalone: true,

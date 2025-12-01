@@ -16,7 +16,12 @@ import {CustomValidators} from "../../../misc/custom-validators";
 import moment from "moment";
 import {NgClass} from "@angular/common";
 
-
+/**
+ * Модальное окно создания/редактирования спринта.
+ *
+ * Проверяет корректность дат и выбранной команды, а также
+ * работает в двух режимах: создание и обновление спринта.
+ */
 @Component({
   selector: 'app-create-sprint-modal',
   standalone: true,

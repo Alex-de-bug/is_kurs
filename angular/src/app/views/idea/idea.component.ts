@@ -25,6 +25,11 @@ import {LoaderService} from "../../services/loader.service";
 import {WebsocketService} from "../../services/websocket.service";
 import {Subscription} from "rxjs";
 
+/**
+ * Страница управления идеями (backlog предложений/фич).
+ *
+ * Отображает список идей с фильтрацией по статусу и поддержкой WebSocket‑обновлений.
+ */
 @Component({
   selector: 'app-idea',
   standalone: true,
@@ -111,6 +116,9 @@ export class IdeaComponent implements OnInit, OnDestroy {
     this.updateIdeas();
   }
 
+  /**
+   * Загружает данные текущего пользователя.
+   */
   loadUserData() {
     this.user = this.authService.getUser();
   }
@@ -119,6 +127,11 @@ export class IdeaComponent implements OnInit, OnDestroy {
     return this.user && this.user.role && this.user.role.id === 1 || false;
   }
 
+  /**
+   * Загружает список идей с учётом текущей страницы и выбранного статуса.
+   *
+   * @param showLoader Показывать ли глобальный лоадер
+   */
   updateIdeas(showLoader : boolean = true) {
     if(showLoader)
       this.loadingData = true;
@@ -134,11 +147,19 @@ export class IdeaComponent implements OnInit, OnDestroy {
     })
   }
 
+  /**
+   * Обработчик смены страницы.
+   *
+   * @param page Новая страница (0‑based)
+   */
   changePage(page: number) {
     this.currentPage = page;
     this.updateIdeas();
   }
 
+  /**
+   * Открывает модальное окно создания новой идеи.
+   */
   createIdea() {
     const modalRef = this.modalService.open(CreateIdeaModalComponent, { size: 'lg' });
     modalRef.result.then(() => {
@@ -146,6 +167,9 @@ export class IdeaComponent implements OnInit, OnDestroy {
     }).catch(() => {});
   }
 
+  /**
+   * Открывает модальное окно редактирования существующей идеи.
+   */
   editIdea($event: any, idea: Idea) {
     if($event) {
       $event.stopPropagation();
@@ -157,6 +181,9 @@ export class IdeaComponent implements OnInit, OnDestroy {
     }).catch(() => {});
   }
 
+  /**
+   * Утверждает идею (переводит в статус APPROVED).
+   */
   approveIdea($event: any, idea: Idea) {
     if($event) {
       $event.stopPropagation();
@@ -164,6 +191,9 @@ export class IdeaComponent implements OnInit, OnDestroy {
     this.setIdeaStatus(idea, IdeaStatus.APPROVED);
   }
 
+  /**
+   * Отклоняет идею (переводит в статус REJECTED).
+   */
   discardIdea($event: any, idea: Idea) {
     if($event) {
       $event.stopPropagation();
@@ -171,6 +201,9 @@ export class IdeaComponent implements OnInit, OnDestroy {
     this.setIdeaStatus(idea, IdeaStatus.REJECTED);
   }
 
+  /**
+   * Возвращает идею в ожидание (статус PENDING).
+   */
   returnIdea($event: any, idea: Idea) {
     if($event) {
       $event.stopPropagation();
@@ -178,6 +211,9 @@ export class IdeaComponent implements OnInit, OnDestroy {
     this.setIdeaStatus(idea, IdeaStatus.PENDING);
   }
 
+  /**
+   * Открывает страницу задачи, связанной с идеей.
+   */
   openTaskView($event: any, id: number) {
     if($event) {
       $event.stopPropagation();
@@ -185,12 +221,21 @@ export class IdeaComponent implements OnInit, OnDestroy {
     this.router.navigate([`tasks/${id}`]);
   }
 
+  /**
+   * Открывает модальное окно просмотра идеи в режиме read‑only.
+   */
   openIdeaModal(idea: Idea) {
     const modalRef = this.modalService.open(CreateIdeaModalComponent, { size: 'lg' });
     modalRef.componentInstance.idea = idea;
     modalRef.componentInstance.viewMode = true;
   }
 
+  /**
+   * Меняет статус идеи и показывает уведомление.
+   *
+   * @param idea Идея, для которой меняется статус
+   * @param status Новый статус
+   */
   private setIdeaStatus(idea: Idea, status: IdeaStatus) {
     this.ideaService.setIdeaStatus(idea.id, status).subscribe({
       next: () => {

@@ -12,7 +12,13 @@ import { StatusDto } from '../../../models/dto/status-dto';
 import {CustomValidators} from "../../../misc/custom-validators";
 import {NgClass} from "@angular/common";
 
-
+/**
+ * Модальное окно создания/редактирования статуса.
+ *
+ * Работает в двух режимах:
+ * - создание нового статуса;
+ * - редактирование существующего (при переданном `status`).
+ */
 @Component({
   selector: 'app-create-status-modal',
   standalone: true,

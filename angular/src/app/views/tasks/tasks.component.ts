@@ -36,6 +36,21 @@ import {LoaderService} from "../../services/loader.service";
 import {WebsocketService} from "../../services/websocket.service";
 import {Subscription} from "rxjs";
 
+/**
+ * Компонент для управления списком задач.
+ * 
+ * Главный компонент раздела задач, предоставляющий:
+ * - Отображение списка задач с пагинацией
+ * - Множественную фильтрацию (по статусу, исполнителю, спринту, тегу)
+ * - Динамический поиск исполнителей и спринтов
+ * - Навигацию к детальной информации о задаче
+ * - Интеграцию с WebSocket для автоматического обновления
+ * 
+ * Использует сложную систему управления состоянием с геттерами/сеттерами
+ * для автоматического обновления данных при изменении фильтров.
+ * 
+ * Поддержка query параметров: `/tasks?sprintId=5&sprintVersion=1.0.0`
+ */
 @Component({
   selector: 'app-tasks',
   standalone: true,
@@ -58,16 +73,34 @@ import {Subscription} from "rxjs";
   templateUrl: 'tasks.component.html'
 })
 export class TasksComponent implements OnInit, OnDestroy {
+  /** Страница с задачами */
   tasks: Page<Task> | null = null;
+  
+  /** Текущая страница пагинации */
   currentPage: number = 0;
+  
+  /** Текущий авторизованный пользователь */
   currentUser: User | null = null;
 
+  /** Счетчик инициализации компонента */
   _initialized = 0;
 
+  /**
+   * Геттер для счетчика инициализации.
+   *
+   * @returns Текущее значение счетчика
+   */
   get initialized() {
     return this._initialized;
   }
 
+  /**
+   * Сеттер для счетчика инициализации.
+   *
+   * При достижении 4 скрывает индикатор загрузки.
+   *
+   * @param value - Новое значение счетчика
+   */
   set initialized(value) {
     if(value > 4) return;
     this._initialized = value;
@@ -76,52 +109,125 @@ export class TasksComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Справочник статусов (id -> название) */
   statuses: { [key: number]: string } = {};
+  
+  /** Справочник тегов (id -> название) */
   tags: { [key: number]: string } = {};
+  
+  /** Справочник пользователей (логин -> полное имя) */
   users: { [key: string]: string } = {};
+  
+  /** Флаг загрузки списка пользователей */
   usersLoad: boolean = false;
+  
+  /** Справочник спринтов (id -> версия) */
   sprints: { [key: number]: string } = {};
+  
+  /** Флаг загрузки списка спринтов */
   sprintsLoad: boolean = false;
 
-
+  /** Выбранный статус для фильтрации */
   _selectedStatusId: number | null = null;
+  
+  /** Выбранный исполнитель для фильтрации */
   _selectedImplementerLogin: string | null = null;
+  
+  /** Выбранный спринт для фильтрации */
   _selectedSprintId: number | null = null;
+  
+  /** Выбранный тег для фильтрации */
   _selectedTagId: number | null = null;
 
+  /**
+   * Геттер для фильтра по статусу.
+   *
+   * @returns ID выбранного статуса или null
+   */
   get selectedStatusId() {
     return this._selectedStatusId;
   }
+  
+  /**
+   * Сеттер для фильтра по статусу.
+   *
+   * Автоматически обновляет список задач и сбрасывает пагинацию.
+   *
+   * @param value - ID статуса для фильтрации
+   */
   set selectedStatusId(value) {
     this._selectedStatusId = value;
     this.currentPage = 0;
     this.updateTasks();
   }
+  
+  /**
+   * Геттер для фильтра по тегу.
+   *
+   * @returns ID выбранного тега или null
+   */
   get selectedTagId() {
     return this._selectedTagId;
   }
+  
+  /**
+   * Сеттер для фильтра по тегу.
+   *
+   * Автоматически обновляет список задач и сбрасывает пагинацию.
+   *
+   * @param value - ID тега для фильтрации
+   */
   set selectedTagId(value) {
     this._selectedTagId = value;
     this.currentPage = 0;
     this.updateTasks();
   }
+  
+  /**
+   * Геттер для фильтра по исполнителю.
+   *
+   * @returns Логин выбранного исполнителя или null
+   */
   get selectedImplementerLogin() {
     return this._selectedImplementerLogin;
   }
+  
+  /**
+   * Сеттер для фильтра по исполнителю.
+   *
+   * Автоматически обновляет список задач и сбрасывает пагинацию.
+   *
+   * @param value - Логин исполнителя для фильтрации
+   */
   set selectedImplementerLogin(value) {
     this._selectedImplementerLogin = value;
     this.currentPage = 0;
     this.updateTasks();
   }
+  
+  /**
+   * Геттер для фильтра по спринту.
+   *
+   * @returns ID выбранного спринта или null
+   */
   get selectedSprintId() {
     return this._selectedSprintId;
   }
+  
+  /**
+   * Сеттер для фильтра по спринту.
+   *
+   * Автоматически обновляет список задач и сбрасывает пагинацию.
+   *
+   * @param value - ID спринта для фильтрации
+   */
   set selectedSprintId(value) {
     this._selectedSprintId = value;
     this.currentPage = 0;
     this.updateTasks();
   }
 
+  /** Подписка на WebSocket сообщения */
   wss: Subscription;
 
   constructor(

@@ -6,7 +6,9 @@ import { JwtRequestDto } from "../../models/dto/jwt-request-dto";
 import {FormControl, FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {NgClass} from "@angular/common";
 
-
+/**
+ * Страница авторизации пользователя.
+ */
 @Component({
   selector: 'app-auth',
   standalone: true,
@@ -23,6 +25,11 @@ export class AuthComponent implements OnInit {
 
   ngOnInit() { }
 
+  /**
+   * Обрабатывает отправку формы авторизации.
+   *
+   * Собирает данные формы и вызывает AuthService.login.
+   */
   onSubmit() {
     const loginRequest: JwtRequestDto = {
       username: this.login.value || '',

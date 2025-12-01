@@ -14,6 +14,12 @@ import {HttpErrorResponse} from "@angular/common/http";
 import {CustomValidators} from "../../../misc/custom-validators";
 import {NgClass} from "@angular/common";
 
+/**
+ * Модальное окно создания задачи.
+ *
+ * Создаёт задачу с указанным названием, нулевыми story points
+ * и приоритетом по умолчанию (MEDIUM), затем переходит на страницу задачи.
+ */
 @Component({
   selector: 'app-create-task-modal',
   standalone: true,

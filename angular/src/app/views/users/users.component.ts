@@ -21,6 +21,12 @@ import {LoaderService} from "../../services/loader.service";
 import {WebsocketService} from "../../services/websocket.service";
 import {Subscription} from "rxjs";
 
+/**
+ * Страница управления пользователями.
+ *
+ * Отображает список пользователей с пагинацией и поиском, позволяет
+ * создавать и редактировать пользователей, а также реагирует на WebSocket‑обновления.
+ */
 @Component({
   selector: 'app-users',
   standalone: true,

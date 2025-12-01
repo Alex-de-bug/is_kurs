@@ -12,7 +12,13 @@ import { TagDto } from '../../../models/dto/tag-dto';
 import {CustomValidators} from "../../../misc/custom-validators";
 import {NgClass} from "@angular/common";
 
-
+/**
+ * Модальное окно создания/редактирования тега.
+ *
+ * Работает в двух режимах:
+ * - создание нового тега;
+ * - редактирование существующего (при переданном `tag`).
+ */
 @Component({
   selector: 'app-create-tag-modal',
   standalone: true,

@@ -24,6 +24,19 @@ import {LoaderService} from "../../services/loader.service";
 import {WebsocketService} from "../../services/websocket.service";
 import {Subscription} from "rxjs";
 
+/**
+ * Компонент для управления рисками проекта.
+ *
+ * Компонент раздела управления рисками, предоставляющий:
+ * - Отображение топ-10 самых критичных рисков
+ * - Полный список всех рисков с пагинацией
+ * - Поиск рисков по описанию
+ * - CRUD операции для рисков (только для администраторов)
+ * - Автоматическое обновление через WebSocket
+ *
+ * Риски оцениваются по формуле: вероятность × потенциальные потери.
+ * Топ-10 рисков отображаются отдельно для быстрого доступа.
+ */
 @Component({
   selector: 'app-risk',
   standalone: true,
@@ -43,17 +56,36 @@ import {Subscription} from "rxjs";
 })
 export class RiskComponent implements OnInit, OnDestroy {
 
+  /** Топ-10 самых критичных рисков */
   topTenRisks: TopRiskDto[] = [];
+  
+  /** Страница со всеми рисками */
   allRisks: Page<Risk> | null = null;
+  
+  /** Текущая страница пагинации */
   currentPage: number = 0;
+  
+  /** Текущий авторизованный пользователь */
   currentUser = this.authService.getUser();
 
+  /** Счетчик инициализации компонента */
   _initialized = 0;
 
+  /**
+   * Геттер для счетчика инициализации
+   * @returns Текущее значение счетчика
+   */
   get initialized() {
     return this._initialized;
   }
 
+  /**
+   * Сеттер для счетчика инициализации.
+   *
+   * При достижении 2 скрывает индикатор загрузки.
+   *
+   * @param value - Новое значение счетчика
+   */
   set initialized(value) {
     if(value > 2) return;
     this._initialized = value;
@@ -62,8 +94,10 @@ export class RiskComponent implements OnInit, OnDestroy {
     }
   }
 
+  /** Строка поиска рисков */
   search = '';
 
+  /** Подписка на WebSocket сообщения */
   wss: Subscription;
 
   constructor(private riskService: RiskService,

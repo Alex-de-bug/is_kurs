@@ -24,6 +24,12 @@ import {CustomValidators} from "../../../misc/custom-validators";
 import {WebsocketService} from "../../../services/websocket.service";
 import {Subscription} from "rxjs";
 
+/**
+ * Модальное окно создания/редактирования идеи.
+ *
+ * Позволяет редактировать описание идеи и управлять связанными рисками
+ * (добавление/удаление), c учётом прав текущего пользователя.
+ */
 @Component({
   selector: 'app-create-idea-modal',
   standalone: true,

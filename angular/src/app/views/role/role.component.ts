@@ -21,6 +21,12 @@ import {LoaderService} from "../../services/loader.service";
 import {WebsocketService} from "../../services/websocket.service";
 import {Subscription} from "rxjs";
 
+/**
+ * Страница управления ролями пользователей.
+ *
+ * Позволяет создавать, редактировать и удалять роли, а также
+ * управлять доступными для роли статусами задач.
+ */
 @Component({
   selector: 'app-role',
   standalone: true,

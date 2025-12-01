@@ -24,6 +24,12 @@ import {LoaderService} from "../../services/loader.service";
 import {WebsocketService} from "../../services/websocket.service";
 import {Subscription} from "rxjs";
 
+/**
+ * Страница управления командами.
+ *
+ * Позволяет просматривать список команд, фильтровать их по строке поиска,
+ * создавать и редактировать команды, а также просматривать загрузку команды по спринтам.
+ */
 @Component({
   selector: 'app-teams',
   standalone: true,

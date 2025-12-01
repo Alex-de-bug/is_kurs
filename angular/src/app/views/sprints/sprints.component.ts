@@ -19,6 +19,19 @@ import {LoaderService} from "../../services/loader.service";
 import {WebsocketService} from "../../services/websocket.service";
 import {Subscription} from "rxjs";
 
+/**
+ * Компонент для управления спринтами.
+ * 
+ * Главный компонент раздела спринтов, предоставляющий:
+ * - Два режима отображения: календарь и таблица
+ * - Фильтрацию спринтов по командам
+ * - Создание новых спринтов (для администраторов)
+ * - Автоматическое обновление через WebSocket
+ * - Сохранение предпочтений пользователя (режим отображения)
+ * 
+ * Режим отображения сохраняется в localStorage и восстанавливается
+ * при следующем посещении страницы.
+ */
 @Component({
   selector: 'app-sprints',
   standalone: true,
@@ -35,13 +48,22 @@ import {Subscription} from "rxjs";
   templateUrl: './sprints.component.html'
 })
 export class SprintsComponent implements OnInit, OnDestroy {
+  /** Флаг табличного режима отображения (false = календарь, true = таблица) */
   tableView = false;
+  
+  /** Список всех команд */
   teams: Team[] = [];
+  
+  /** Опции для выпадающего списка команд (название -> название) */
   teamOptions: { [key: string]: string } = {};
+  
+  /** Текущий авторизованный пользователь */
   currentUser = this.authService.getUser();
 
+  /** Выбранная команда для фильтрации спринтов */
   _selectedTeam: string = '';
 
+  /** Подписка на WebSocket сообщения */
   wss: Subscription;
 
   constructor(private teamService : TeamService,
@@ -67,23 +89,51 @@ export class SprintsComponent implements OnInit, OnDestroy {
     this.wss.unsubscribe();
   }
 
+  /**
+   * Загружает данные текущего пользователя.
+   * 
+   * Вызывается при изменении данных пользователя через AuthService.
+   */
   loadUserData() {
     this.currentUser = this.authService.getUser();
   }
 
+  /**
+   * Проверяет, является ли текущий пользователь администратором
+   * 
+   * @returns true если пользователь - администратор (role.id === 1)
+   */
   get isAdmin() : boolean {
     return this.currentUser && this.currentUser.role && this.currentUser.role.id === 1 || false;
   }
 
+  /**
+   * Устанавливает режим отображения спринтов.
+   * 
+   * Сохраняет выбор пользователя в localStorage.
+   * 
+   * @param view - true для табличного режима, false для календаря
+   */
   setView(view: boolean) {
     this.tableView = view;
     localStorage.setItem("lastView", String(view));
   }
 
+  /**
+   * Геттер для выбранной команды
+   * @returns Название выбранной команды
+   */
   get selectedTeam(): string {
     return this._selectedTeam;
   }
 
+  /**
+   * Сеттер для выбранной команды.
+   * 
+   * Автоматически обновляет список спринтов при изменении.
+   * 
+   * @param value - Название команды для выбора
+   */
   set selectedTeam(value: string) {
     if(value !== this._selectedTeam && value != null) {
       this._selectedTeam = value;
@@ -91,6 +141,12 @@ export class SprintsComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Инициализирует компонент.
+   * 
+   * - Восстанавливает режим отображения из localStorage
+   * - Загружает список команд
+   */
   ngOnInit() {
     const lastView = localStorage.getItem("lastView");
     this.tableView = lastView === "true";
@@ -98,6 +154,14 @@ export class SprintsComponent implements OnInit, OnDestroy {
     this.loadTeams();
   }
 
+  /**
+   * Загружает список команд с сервера.
+   * 
+   * При первой загрузке автоматически выбирает команду пользователя.
+   * Если передан параметр preselected, выбирает указанную команду.
+   * 
+   * @param preselected - Название команды для предварительного выбора (опционально)
+   */
   loadTeams(preselected?: string) {
     const user = this.authService.getUser();
     this.teamService.getAllTeams(true).subscribe({

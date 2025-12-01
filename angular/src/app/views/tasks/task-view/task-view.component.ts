@@ -37,6 +37,15 @@ import {LoaderService} from "../../../services/loader.service";
 import {WebsocketService} from "../../../services/websocket.service";
 import {Subscription} from "rxjs";
 
+/**
+ * Страница детального просмотра задачи.
+ *
+ * Позволяет:
+ * - редактировать поля задачи (название, story points, приоритет);
+ * - назначать исполнителя, спринт и статус;
+ * - управлять тегами и рисками;
+ * - отслеживать изменения по WebSocket и аккуратно синхронизироваться с сервером.
+ */
 @Component({
   selector: 'app-task-view',
   standalone: true,

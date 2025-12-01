@@ -21,7 +21,12 @@ import {SprintTeamDto} from "../../../models/dto/sprint-team-dto";
 import {WebsocketService} from "../../../services/websocket.service";
 import {Subscription} from "rxjs";
 
-
+/**
+ * Модальное окно со списком релизов спринта.
+ *
+ * Позволяет просматривать и (для админа) создавать, редактировать и удалять релизы,
+ * автоматически обновляется при событиях WebSocket.
+ */
 @Component({
   selector: 'app-release-modal',
   standalone: true,

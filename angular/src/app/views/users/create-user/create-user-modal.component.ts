@@ -32,6 +32,12 @@ import {HttpErrorResponse} from "@angular/common/http";
 import {NgClass, NgIf} from "@angular/common";
 import {CustomValidators} from "../../../misc/custom-validators";
 
+/**
+ * Модальное окно создания/редактирования пользователя.
+ *
+ * Учитывает права текущего пользователя (администратор/обычный),
+ * позволяет управлять логином, email, ФИО, командой, ролью и паролем.
+ */
 @Component({
   selector: 'app-create-user-modal',
   standalone: true,

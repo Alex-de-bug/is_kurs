@@ -15,6 +15,11 @@ import {NgClass} from "@angular/common";
 import {SprintTeamDto} from "../../../../models/dto/sprint-team-dto";
 import moment from "moment";
 
+/**
+ * Модальное окно создания/редактирования релиза.
+ *
+ * Валидирует дату релиза относительно текущего года и границ спринта.
+ */
 @Component({
   selector: 'app-create-release-modal',
   standalone: true,
