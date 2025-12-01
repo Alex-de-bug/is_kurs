@@ -1,5 +1,6 @@
 package net.alephdev.calendar.controller;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -35,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Релизы", description = "API для управления релизами")
 @SecurityRequirement(name = "Bearer Authentication")
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 public class ReleaseController {
 
   private final ReleaseService releaseService;

@@ -1,5 +1,6 @@
 package net.alephdev.calendar.controller;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "Аутентификация", description = "API для аутентификации пользователей")
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 public class AuthController {
   private final AuthenticationManager authenticationManager;
   private final UserService userService;

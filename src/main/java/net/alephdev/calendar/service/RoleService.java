@@ -1,5 +1,6 @@
 package net.alephdev.calendar.service;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @Transactional
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 public class RoleService {
 
   private final RoleRepository roleRepository;

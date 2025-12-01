@@ -33,17 +33,7 @@ public class SecurityConfig {
 
   @Bean
   public PasswordEncoder passwordEncoder() {
-    return new PasswordEncoder() {
-      @Override
-      public String encode(CharSequence rawPassword) {
-        return DigestUtils.sha512Hex(rawPassword.toString());
-      }
-
-      @Override
-      public boolean matches(CharSequence rawPassword, String encodedPassword) {
-        return encode(rawPassword).equals(encodedPassword);
-      }
-    };
+    return new Sha512PasswordEncoder();
   }
 
   @Bean
@@ -67,5 +57,17 @@ public class SecurityConfig {
             UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
+  }
+
+  private static final class Sha512PasswordEncoder implements PasswordEncoder {
+    @Override
+    public String encode(CharSequence rawPassword) {
+      return DigestUtils.sha512Hex(rawPassword.toString());
+    }
+
+    @Override
+    public boolean matches(CharSequence rawPassword, String encodedPassword) {
+      return encode(rawPassword).equals(encodedPassword);
+    }
   }
 }

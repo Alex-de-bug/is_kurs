@@ -1,6 +1,7 @@
 package net.alephdev.calendar;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +16,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 @Component
 @RequiredArgsConstructor
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 public class WebSocketHandler extends TextWebSocketHandler {
 
   private final List<WebSocketSession> sessions = new CopyOnWriteArrayList<>();

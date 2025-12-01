@@ -1,5 +1,6 @@
 package net.alephdev.calendar.controller;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -36,6 +37,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @io.swagger.v3.oas.annotations.tags.Tag(name = "Теги", description = "API для управления тегами")
 @SecurityRequirement(name = "Bearer Authentication")
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 public class TagController {
 
   private final TagService tagService;

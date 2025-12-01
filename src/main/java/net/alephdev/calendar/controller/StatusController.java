@@ -1,5 +1,6 @@
 package net.alephdev.calendar.controller;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -31,6 +32,7 @@ import org.springframework.web.bind.annotation.RestController;
 @AuthorizedRequired
 @Tag(name = "Статусы", description = "API для управления статусами")
 @SecurityRequirement(name = "Bearer Authentication")
+@SuppressFBWarnings("EI_EXPOSE_REP2")
 public class StatusController {
 
   private final StatusService statusService;

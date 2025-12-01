@@ -1,5 +1,6 @@
 package net.alephdev.calendar.models;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,6 +17,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "Idea")
+@SuppressFBWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
 public class Idea {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

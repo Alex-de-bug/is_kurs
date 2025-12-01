@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
@@ -39,7 +40,7 @@ public class JwtUtils {
   }
 
   private String createToken(Map<String, Object> claims, String subject) {
-    Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
+    Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
 
     return Jwts.builder()
         .setClaims(claims)
@@ -64,7 +65,7 @@ public class JwtUtils {
   }
 
   private Claims extractAllClaims(String token) {
-    Key key = Keys.hmacShaKeyFor(secretKey.getBytes());
+    Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
   }
 

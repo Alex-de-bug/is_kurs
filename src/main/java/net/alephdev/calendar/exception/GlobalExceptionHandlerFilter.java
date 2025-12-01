@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import net.alephdev.calendar.dto.MessageDto;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -62,15 +63,17 @@ public class GlobalExceptionHandlerFilter {
 
   @ExceptionHandler(JpaSystemException.class)
   public ResponseEntity<MessageDto> handleJpaSystemException(JpaSystemException ex) {
-    String errorMessage;
-    try {
+    String errorMessage = "Неверно введены данные";
+    Throwable rootCause = ex.getRootCause();
+    if (rootCause != null && rootCause.getMessage() != null) {
       errorMessage =
-          Arrays.stream(ex.getRootCause().getMessage().split("\\n")[0].split(":"))
+          Arrays.stream(rootCause.getMessage().split("\\n")[0].split(":"))
               .skip(1)
               .collect(Collectors.joining(":"))
               .trim();
-    } catch (Exception e) {
-      errorMessage = "Неверно введены данные";
+      if (errorMessage.isEmpty()) {
+        errorMessage = "Неверно введены данные";
+      }
     }
     return new ResponseEntity<>(new MessageDto(errorMessage), HttpStatus.BAD_REQUEST);
   }
