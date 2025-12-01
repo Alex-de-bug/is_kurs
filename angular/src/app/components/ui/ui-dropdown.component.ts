@@ -14,6 +14,11 @@ import {NgForOf} from "@angular/common";
 import {FaIconComponent} from "@fortawesome/angular-fontawesome";
 import {faSearch} from "@fortawesome/free-solid-svg-icons";
 
+/**
+ * Универсальный выпадающий список с поиском и поддержкой ControlValueAccessor.
+ *
+ * Подходит для выбора значения из словаря (key -> label) с опциональным поиском.
+ */
 @Component({
   selector: 'ui-dropdown',
   standalone: true,
@@ -62,6 +67,9 @@ export class UiDropdownComponent implements ControlValueAccessor, OnInit {
   showSelector = false;
   search = '';
 
+  /**
+   * Возвращает отфильтрованный по строке поиска список ключей словаря options.
+   */
   get optionsFiltered(): string[] {
     if(!this.searchOnly) {
       return Object.keys(this.options).filter(key =>
@@ -71,6 +79,11 @@ export class UiDropdownComponent implements ControlValueAccessor, OnInit {
     return Object.keys(this.options);
   }
 
+  /**
+   * Выбирает значение по ключу и эмитит соответствующие события.
+   *
+   * @param key Ключ выбранного элемента
+   */
   select(key: string): void {
     this.modelValueChange.emit(key);
     if (this.modelValue !== key) {
@@ -89,22 +102,45 @@ export class UiDropdownComponent implements ControlValueAccessor, OnInit {
   onChange: any = () => {};
   onTouched: any = () => {};
 
+  /**
+   * Устанавливает текущее значение выпадающего списка (из формы).
+   *
+   * @param value Новое значение
+   */
   writeValue(value: any): void {
     this.modelValue = value;
   }
 
+  /**
+   * Регистрирует callback, вызываемый при изменении значения.
+   *
+   * @param fn Функция обработки изменения значения
+   */
   registerOnChange(fn: any): void {
     this.onChange = fn;
   }
 
+  /**
+   * Регистрирует callback, вызываемый при потере фокуса.
+   *
+   * @param fn Функция обработки события "touched"
+   */
   registerOnTouched(fn: any): void {
     this.onTouched = fn;
   }
 
+  /**
+   * Устанавливает состояние disabled для контрола.
+   *
+   * @param isDisabled Признак недоступности контрола
+   */
   setDisabledState(isDisabled: boolean): void {
     this.disabled = isDisabled;
   }
 
+  /**
+   * Инициализирует подписку на изменение modelValue для синхронизации с формой.
+   */
   ngOnInit(): void {
     this.modelValueChange.subscribe((value) => {
       this.modelValue = value;
@@ -119,6 +155,9 @@ export class UiDropdownComponent implements ControlValueAccessor, OnInit {
 
   protected readonly faSearch = faSearch;
 
+  /**
+   * Сбрасывает выбранное значение к resetValue и очищает поиск.
+   */
   reset() {
     this.modelValueChange.emit(this.resetValue);
     this.changed.emit();
@@ -127,10 +166,16 @@ export class UiDropdownComponent implements ControlValueAccessor, OnInit {
     this.showSelector = false;
   }
 
+  /**
+   * Проксирует изменение строки поиска наружу через событие searchChange.
+   */
   searchChangeEmit($event: any) {
     this.searchChange.emit(this.search);
   }
 
+  /**
+   * Переключает видимость списка опций.
+   */
   triggerSelector() {
     setTimeout(() => {
       this.showSelector = !this.showSelector;

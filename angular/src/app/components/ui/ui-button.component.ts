@@ -1,6 +1,11 @@
 import { Component, Input } from '@angular/core';
 import {NgClass} from "@angular/common";
 
+/**
+ * Базовая кнопка UI с Tailwind-стилями.
+ *
+ * Предоставляет единый стиль кнопок по всему приложению.
+ */
 @Component({
   selector: 'ui-button',
   standalone: true,
@@ -19,6 +24,9 @@ export class UiButtonComponent {
   @Input() classExtension: string = '';
   @Input() disabled: boolean = false;
 
+  /**
+   * Возвращает набор CSS‑классов для кнопки с учётом цвета и состояния disabled.
+   */
   get classes(): string[] {
     const baseClasses = ['items-center', 'justify-center', 'font-medium', 'rounded-lg', 'text-sm', 'px-4', 'py-2', 'focus:outline-none', 'transition-opacity'];
     const colorClasses = [

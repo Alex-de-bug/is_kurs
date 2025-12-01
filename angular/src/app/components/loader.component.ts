@@ -1,5 +1,10 @@
 import {Component} from "@angular/core";
 
+/**
+ * Глобальный компонент‑оверлей индикатора загрузки.
+ *
+ * Покрывает весь экран полупрозрачным слоем с анимацией загрузки.
+ */
 @Component({
   selector: 'app-loader',
   template: `

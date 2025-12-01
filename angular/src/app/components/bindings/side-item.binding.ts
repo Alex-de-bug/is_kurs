@@ -2,6 +2,11 @@ import {Component, Input} from "@angular/core";
 import {FaIconComponent} from "@fortawesome/angular-fontawesome";
 import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
 
+/**
+ * Боковой пункт меню с иконкой.
+ *
+ * Используется в сайдбаре навигации.
+ */
 @Component({
   selector: 'li[side-item]',
   standalone: true,
@@ -18,5 +23,8 @@ import {IconDefinition} from "@fortawesome/fontawesome-svg-core";
   `
 })
 export class SideItemBinding {
+  /**
+   * Иконка, отображаемая слева от текста.
+   */
   @Input() icon !: IconDefinition;
 }

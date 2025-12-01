@@ -1,6 +1,11 @@
 import {Component, forwardRef, Input} from "@angular/core";
 import {ControlValueAccessor, FormsModule, NG_VALUE_ACCESSOR} from "@angular/forms";
 
+/**
+ * Чекбокс с поддержкой ControlValueAccessor.
+ *
+ * Используется в формах как обычный Angular form control.
+ */
 @Component({
   selector: 'ui-checkbox',
   template: `
@@ -39,14 +44,29 @@ export class UiCheckboxComponent implements ControlValueAccessor{
   onChange = (_: any) => {};
   onTouched = () => {};
 
+  /**
+   * Устанавливает значение чекбокса извне (из формы).
+   *
+   * @param value Новое значение
+   */
   writeValue(value: any): void {
     this.value = value;
   }
 
+  /**
+   * Регистрирует callback, вызываемый при изменении значения.
+   *
+   * @param fn Функция, обрабатывающая изменение значения
+   */
   registerOnChange(fn: any): void {
     this.onChange = fn;
   }
 
+  /**
+   * Регистрирует callback, вызываемый при потере фокуса.
+   *
+   * @param fn Функция, обрабатывающая событие "touched"
+   */
   registerOnTouched(fn: any): void {
     this.onTouched = fn;
   }

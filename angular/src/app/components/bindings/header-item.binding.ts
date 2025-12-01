@@ -1,5 +1,10 @@
 import {Component, HostBinding, Input} from "@angular/core";
 
+/**
+ * Директива‑биндинг для элементов хедера.
+ *
+ * Добавляет Tailwind‑классы в зависимости от активного состояния.
+ */
 @Component({
   selector: 'button[header-item]',
   standalone: true,
@@ -7,6 +12,10 @@ import {Component, HostBinding, Input} from "@angular/core";
 })
 export class HeaderItemBinding {
   @Input() active = false;
+
+  /**
+   * Возвращает набор CSS‑классов в зависимости от флага active.
+   */
   @HostBinding('class') get classes() {
     return "block py-0 pr-4 pl-3 " +
       (this.active ? "rounded bg-transparent text-primary-700 p-0 dark:text-white" :
